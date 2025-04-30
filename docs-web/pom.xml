@@ -143,6 +143,14 @@
         <directory>src/main/resources</directory>
       </resource>
     </resources>
+
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-site-plugin</artifactId>
+            <version>3.12.1</version>
+        </plugin>
+    </plugins>
   </build>
 
   <profiles>
@@ -272,4 +280,11 @@
       </build>
     </profile>
   </profiles>
+
+  <distributionManagement>
+    <site>
+      <id>local</id>
+      <url>file:${project.build.directory}/site</url>
+    </site>
+  </distributionManagement>
 </project>
