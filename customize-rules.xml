@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="Custom RuleSet"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="http://pmd.sourceforge.net/ruleset_2_0_0.xsd"
+         xmlns:fn="http://www.w3.org/2005/xpath-functions">
+
+    <description>
+        Custom PMD ruleset for Practice 7: LoC, CC, WMC, CBO, LCOM
+    </description>
+
+    <!-- 1. Lines of Code -->
+    <rule ref="category/java/design.xml/ExcessiveClassLength"/>
+    <rule ref="category/java/design.xml/ExcessiveMethodLength"/>
+
+    <!-- 2. Cyclomatic Complexity -->
+    <rule ref="category/java/design.xml/CyclomaticComplexity"/>
+
+    <!-- 3. Weighted Methods per Class -->
+    <rule ref="category/java/design.xml/TooManyMethods"/>
+
+    <!-- 4. Coupling Between Objects -->
+    <rule ref="category/java/design.xml/CouplingBetweenObjects"/>
+
+    <!-- 5. Lack of Cohesion in Methods -->
+    <rule ref="category/java/design.xml/GodClass"/>
+
+</ruleset>
