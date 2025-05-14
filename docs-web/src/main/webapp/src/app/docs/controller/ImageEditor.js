@@ -12,9 +12,14 @@ angular.module('docs').controller('ImageEditor', function ($scope, $uibModalInst
 
   // 初始化画布
   const initCanvas = () => {
+    const canvasElement = document.getElementById(canvasEl);
+    const width = canvasElement.parentElement.clientWidth;
+    const height = canvasElement.parentElement.clientHeight * 3;
     $scope.fabricCanvas = new fabric.Canvas(canvasEl, {
       isDrawingMode: false,
-      backgroundColor: '#fff'
+      backgroundColor: '#fff',
+      width,
+      height
     });
   };
 
@@ -22,29 +27,29 @@ angular.module('docs').controller('ImageEditor', function ($scope, $uibModalInst
   const loadImageToCanvas = () => {
     const canvas = $scope.fabricCanvas;
     const w = canvas.getWidth(), h = canvas.getHeight();
-
+  
     fabric.Image.fromURL($scope.imageUrl, img => {
       const scale = Math.min(w / img.width, h / img.height, 1);
       img.set({
-        left: (w - img.width * scale) / 2,
-        top: (h - img.height * scale) / 2,
+        originX: 'center',
+        originY: 'center',
+        left: w / 2,
+        top: h / 2,
         scaleX: scale,
         scaleY: scale,
         selectable: false
       });
-      canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
-      canvas.renderAll();
-      $scope.imageLoaded = true;
+      canvas.setBackgroundImage(img, () => {
+        canvas.renderAll();
+        $scope.imageLoaded = true;
+        saveState(); 
+      }, {
+        originX: 'center',
+        originY: 'center',
+        left: w / 2,
+        top: h / 2
+      });
     });
-  };
-
-  // 保存状态（用于撤销/重做）
-  const saveState = () => {
-    if ($scope.currentStep < $scope.history.length - 1) {
-      $scope.history = $scope.history.slice(0, $scope.currentStep + 1);
-    }
-    $scope.history.push($scope.fabricCanvas.toJSON());
-    $scope.currentStep = $scope.history.length - 1;
   };
 
   // 启用裁剪
@@ -59,8 +64,8 @@ angular.module('docs').controller('ImageEditor', function ($scope, $uibModalInst
     const rect = new fabric.Rect({
       left: bgImg.left,
       top: bgImg.top,
-      width: bgImg.getScaledWidth(),
-      height: bgImg.getScaledHeight(),
+      width: bgImg.getScaledWidth() * 0.5,
+      height: bgImg.getScaledHeight() * 0.5,
       fill: 'rgba(0,0,0,0)',
       stroke: '#ff4081',
       strokeWidth: 2,
@@ -77,14 +82,6 @@ angular.module('docs').controller('ImageEditor', function ($scope, $uibModalInst
     saveState();
   };
 
-  // 撤销操作
-  $scope.undo = function() {
-    if ($scope.currentStep > 0) {
-      $scope.currentStep--;
-      $scope.fabricCanvas.loadFromJSON($scope.history[$scope.currentStep], $scope.fabricCanvas.renderAll.bind($scope.fabricCanvas));
-    }
-  };
-
   // 旋转图片（90度）
   $scope.rotateImage = function () {
     const canvas = $scope.fabricCanvas;
@@ -92,32 +89,22 @@ angular.module('docs').controller('ImageEditor', function ($scope, $uibModalInst
   
     if (!bgImg) return;
   
-    // 获取当前角度
     const currentAngle = bgImg.get('angle') || 0;
     const newAngle = (currentAngle + 90) % 360;
   
-    // 获取图片的宽高和缩放比例
-    const width = bgImg.getScaledWidth();
-    const height = bgImg.getScaledHeight();
-  
-    // 图片中心点（相对于画布）
-    const centerX = bgImg.left + width / 2;
-    const centerY = bgImg.top + height / 2;
-  
-    // 设置旋转中心为图片中心
     bgImg.set({
       angle: newAngle,
       originX: 'center',
       originY: 'center',
-      left: centerX - (width / 2),
-      top: centerY - (height / 2)
+      left: canvas.getWidth() / 2,
+      top: canvas.getHeight() / 2
     });
   
     canvas.renderAll();
-    saveState(); // 保存旋转状态到历史记录
+    saveState();
   };
 
-  // 处理图像（裁剪后导出或上传）
+
   const processImage = isDownload => {
     const canvas = $scope.fabricCanvas;
     const bgImg = canvas.backgroundImage;
@@ -151,8 +138,25 @@ angular.module('docs').controller('ImageEditor', function ($scope, $uibModalInst
       }, 'image/png');
     }
   };
+ 
+  $scope.color = '#000000';
+  $scope.width = 5;
+  $scope.enablePencil = function () {
+    $scope.isCropping = false;
+    $scope.fabricCanvas.isDrawingMode = true;
+    $scope.fabricCanvas.freeDrawingBrush = new fabric.PencilBrush($scope.fabricCanvas);
+    $scope.fabricCanvas.freeDrawingBrush.color = $scope.color;
+    $scope.fabricCanvas.freeDrawingBrush.width = $scope.width;
+    console.log('enablePencil', $scope.fabricCanvas.freeDrawingBrush.color, $scope.fabricCanvas.freeDrawingBrush.width);
+  };
 
-  // 按钮事件绑定
+  $scope.updateBrush = function (color = -1, width = -1) {
+    $scope.color = color !== -1 ? color : $scope.color;
+    $scope.width = width !== -1 ? width : $scope.width;
+    $scope.fabricCanvas.freeDrawingBrush.color = $scope.color;
+    $scope.fabricCanvas.freeDrawingBrush.width = $scope.width;
+  };
+
   $scope.onLoad = () => {
     initCanvas();
     loadImageToCanvas();
