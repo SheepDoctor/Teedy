@@ -1,0 +1,26 @@
+<div class="modal-header">
+  <h3 class="modal-title">图片编辑</h3>
+</div>
+  
+<div class="modal-body">
+  <!-- 画布容器 -->
+  <div style="position: relative;">
+    <canvas id="canvas-editor"></canvas>
+    <img id="imageToEdit"
+         ng-src="{{imageUrl}}"
+         ng-if="imageUrl"
+         onload="angular.element(this).scope().onLoad()"
+         alt="待编辑图片"
+         style="display:none;">
+  </div>
+
+  <!-- 工具栏 -->
+  <div class="image-editor-actions mt-3 text-left">
+    <button class="btn btn-outline-success mr-2" ng-click="enableCrop()">📐 剪裁</button>
+    <button class="btn btn-outline-primary mr-2" ng-click="rotateImage()">🔄 旋转</button>
+    <button class="btn btn-outline-secondary mr-2" ng-click="undo()">🔁 撤销</button>
+    <button class="btn btn-secondary mr-2" ng-click="downloadImage()">💾 保存到本地</button>
+    <button class="btn btn-primary mr-2" ng-click="saveImage()">✅ 保存修改</button>
+    <button class="btn btn-outline-secondary" ng-click="cancel()">❌ 取消</button>
+  </div>
+</div>

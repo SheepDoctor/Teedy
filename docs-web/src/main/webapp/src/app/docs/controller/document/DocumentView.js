@@ -164,4 +164,20 @@ angular.module('docs').controller('DocumentView', function ($scope, $rootScope, 
       }
     });
   };
+
+  // 打开图像编辑器
+  $scope.editImage = function (file) {
+    console.log('editImage', file);
+  
+    $uibModal.open({
+      templateUrl: 'partial/docs/image-editor.modal.html',
+      controller: 'ImageEditor',
+      resolve: {
+        file: function () {
+          return file;
+        }
+      },
+      size: 'lg'
+    });
+  };
 });
