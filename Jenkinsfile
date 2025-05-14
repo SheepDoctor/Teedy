@@ -4,7 +4,7 @@ pipeline {
     environment {
         DEPLOYMENT_NAME = "hello-node"
         CONTAINER_NAME = "docs"
-        IMAGE_NAME = "sheepdoctor/teedy:latest"
+        IMAGE_NAME = "sismics/docs:v1.11"
     }
     
     stages {
