@@ -85,7 +85,7 @@ angular.module('docs').controller('Login', function(Restangular, $scope, $rootSc
   
       // 注册成功提示并跳转
       var title = 'Success';
-      var msg = 'Please Login';
+      var msg = '等待管理员批准，后可登录';
       var btns = [{ result: 'ok', label: 'OK', cssClass: 'btn-primary' }];
       $dialog.messageBox(title, msg, btns).result.then(function() {
         console.log('【Register】用户点击 OK，准备跳转到登录页'); // 🔍 调试提示：用户点击确定
