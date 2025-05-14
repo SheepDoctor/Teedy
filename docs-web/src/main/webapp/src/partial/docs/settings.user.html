@@ -10,6 +10,8 @@
         <tr>
           <th>{{ 'settings.user.username' | translate }}</th>
           <th>{{ 'settings.user.create_date' | translate }}</th>
+          <th>{{ '是否合法' | translate }}</th>
+          <th>操作</th> <!-- 新增列标题 -->
         </tr>
       </thead>
       <tbody>
@@ -21,6 +23,14 @@
             <span class="fas fa-lock" ng-show="user.totp_enabled" uib-tooltip="{{ 'settings.user.totp_enabled' | translate }}"></span>
           </td>
           <td>{{ user.create_date | date: dateFormat }}</td>
+          <td>
+            <span ng-if="!user.disabled" class="text-success">合法</span>
+            <span ng-if="user.disabled" class="text-danger">非法</span>
+          </td>
+          <td>
+            <button class="btn btn-success btn-xs" ng-click="approveUser(user)" ng-disabled="!user.disabled || user.email === 'default@example.com'">同意</button>
+            <button class="btn btn-danger btn-xs" ng-click="rejectUser(user)" ng-disabled="!user.disabled || user.email === 'default@example.com'">拒绝</button>
+          </td>
         </tr>
       </tbody>
     </table>

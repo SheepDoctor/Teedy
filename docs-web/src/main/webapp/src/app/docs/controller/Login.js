@@ -75,4 +75,29 @@ angular.module('docs').controller('Login', function(Restangular, $scope, $rootSc
       });
     });
   };
+
+  // register
+  $scope.register = function() {
+    console.log('【Register】开始执行注册流程'); // 🔍 调试提示：函数被调用
+  
+    User.register($scope.user).then(function(response) {
+      console.log('【Register】注册成功，响应数据:', response.data); // 🔍 调试提示：查看后端返回结果
+  
+      // 注册成功提示并跳转
+      var title = 'Success';
+      var msg = 'Please Login';
+      var btns = [{ result: 'ok', label: 'OK', cssClass: 'btn-primary' }];
+      $dialog.messageBox(title, msg, btns).result.then(function() {
+        console.log('【Register】用户点击 OK，准备跳转到登录页'); // 🔍 调试提示：用户点击确定
+        $state.go('login');
+      });
+    }, function(error) {
+      console.error('【Register】注册失败，错误详情:', error); // 🔍 调试提示：查看错误信息
+  
+      var title = 'Failed';
+      var msg = 'Failed';
+      var btns = [{ result: 'ok', label: 'OK', cssClass: 'btn-primary' }];
+      $dialog.messageBox(title, msg, btns);
+    });
+  };
 });
