@@ -236,10 +236,4 @@
     </resources>
   </build>
 
-  <distributionManagement>
-    <site>
-      <id>local</id>
-      <url>file:${project.build.directory}/site</url>
-    </site>
-  </distributionManagement>
 </project>
