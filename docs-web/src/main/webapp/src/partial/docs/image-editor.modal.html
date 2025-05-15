@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Image Editor</title>
+    <title>Image Editor</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,7 +22,7 @@
     </style>
 </head>
 <body>
-    <h1>Enhanced Image Editor</h1>
+    <h1>Image Editor</h1>
     <input type="file" id="upload" accept="image/*">
     <canvas id="canvas"></canvas>
     <div class="controls">
@@ -114,8 +114,6 @@
         }
 
         document.getElementById('apply-crop').addEventListener('click', function() {
-            // Restore the original image data to remove the red rectangle
-            ctx.putImageData(imageData, 0, 0);
             const width = Math.abs(cropEndX - cropStartX);
             const height = Math.abs(cropEndY - cropStartY);
             const x = Math.min(cropStartX, cropEndX);
@@ -161,15 +159,11 @@
 
         // Save image
         document.getElementById('save').addEventListener('click', function() {
-          const canvas = document.getElementById('canvas'); // 确保 ID 正确
-          canvas.toBlob(function(blob) {
-              const link = document.createElement('a');
-              link.download = 'edited_image.png'; // 文件名可以自定义
-              link.href = URL.createObjectURL(blob);
-              link.click();
-              URL.revokeObjectURL(link.href); // 释放内存
-          }, 'image/png');
-      });
+            const link = document.createElement('a');
+            link.download = 'edited_image.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
     </script>
 </body>
 </html>
