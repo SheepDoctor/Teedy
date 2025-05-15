@@ -1,169 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Editor</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        #canvas {
-            border: 1px solid #000;
-            margin-top: 10px;
-        }
-        .controls {
-            margin-top: 10px;
-        }
-        .tool-options {
-            margin-top: 10px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Image Editor</h1>
-    <input type="file" id="upload" accept="image/*">
-    <canvas id="canvas"></canvas>
-    <div class="controls">
-        <button id="crop">Crop</button>
-        <button id="rotate">Rotate 90°</button>
-        <button id="draw">Draw</button>
-        <button id="save">Save Image</button>
-    </div>
-    <div class="tool-options" id="crop-options" style="display: none;">
-        <button id="apply-crop">Apply Crop</button>
-    </div>
-    <div class="tool-options" id="draw-options" style="display: none;">
-        <label for="brush-color">Brush Color:</label>
-        <input type="color" id="brush-color" value="#000000">
-        <label for="brush-size">Brush Size:</label>
-        <input type="range" id="brush-size" min="1" max="20" value="5">
-    </div>
+<h1>Image Editor</h1>
 
-    <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        let image = new Image();
-        let imageData;
-        let isDrawing = false;
-        let lastX = 0;
-        let lastY = 0;
-        let cropStartX, cropStartY, cropEndX, cropEndY;
-        let isCropping = false;
+<!-- Canvas -->
+<canvas id="canvas"></canvas>
 
-        // Upload image
-        document.getElementById('upload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                image.src = event.target.result;
-                image.onload = function() {
-                    canvas.width = image.width;
-                    canvas.height = image.height;
-                    ctx.drawImage(image, 0, 0);
-                    imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                }
-            }
-            reader.readAsDataURL(file);
-        });
+<!-- Controls -->
+<div class="controls">
+    <button ng-click="rotateImage()">Rotate 90°</button>
+    <button ng-click="enableCrop()">Crop</button>
+    <button ng-click="enableDraw()">Draw</button>
+    <button ng-click="init()">Restore</button>
+    <button ng-click="saveImage()">Save to Local</button>
+    <button ng-click="saveToServer()">Save to Server</button>
+    <button ng-click="exitEditor()">Exit</button>
+</div>
 
-        // Rotate image
-        document.getElementById('rotate').addEventListener('click', function() {
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = canvas.height;
-            tempCanvas.height = canvas.width;
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
-            tempCtx.rotate(Math.PI / 2);
-            tempCtx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
-            canvas.width = tempCanvas.width;
-            canvas.height = tempCanvas.height;
-            ctx.drawImage(tempCanvas, 0, 0);
-            imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        });
+<!-- Crop Options -->
+<div class="tool-options" id="crop-options" ng-show="isCropping">
+    <button ng-click="applyCrop()">Apply Crop</button>
+    <button ng-click="cancelCrop()">Cancel Crop</button>
+</div>
 
-        // Crop functionality
-        document.getElementById('crop').addEventListener('click', function() {
-            isCropping = true;
-            document.getElementById('crop-options').style.display = 'block';
-            canvas.addEventListener('mousedown', startCrop);
-            canvas.addEventListener('mousemove', drawCropRect);
-            canvas.addEventListener('mouseup', endCrop);
-        });
-
-        function startCrop(e) {
-            cropStartX = e.offsetX;
-            cropStartY = e.offsetY;
-        }
-
-        function drawCropRect(e) {
-            if (!isCropping) return;
-            cropEndX = e.offsetX;
-            cropEndY = e.offsetY;
-            ctx.putImageData(imageData, 0, 0);
-            ctx.strokeStyle = 'red';
-            ctx.strokeRect(cropStartX, cropStartY, cropEndX - cropStartX, cropEndY - cropStartY);
-        }
-
-        function endCrop() {
-            isCropping = false;
-            canvas.removeEventListener('mousedown', startCrop);
-            canvas.removeEventListener('mousemove', drawCropRect);
-            canvas.removeEventListener('mouseup', endCrop);
-        }
-
-        document.getElementById('apply-crop').addEventListener('click', function() {
-            const width = Math.abs(cropEndX - cropStartX);
-            const height = Math.abs(cropEndY - cropStartY);
-            const x = Math.min(cropStartX, cropEndX);
-            const y = Math.min(cropStartY, cropEndY);
-            const croppedData = ctx.getImageData(x, y, width, height);
-            canvas.width = width;
-            canvas.height = height;
-            ctx.putImageData(croppedData, 0, 0);
-            imageData = croppedData;
-            document.getElementById('crop-options').style.display = 'none';
-        });
-
-        // Draw functionality
-        document.getElementById('draw').addEventListener('click', function() {
-            isDrawing = true;
-            document.getElementById('draw-options').style.display = 'block';
-            canvas.addEventListener('mousedown', startDrawing);
-            canvas.addEventListener('mousemove', draw);
-            canvas.addEventListener('mouseup', stopDrawing);
-            canvas.addEventListener('mouseout', stopDrawing);
-        });
-
-        function startDrawing(e) {
-            isDrawing = true;
-            [lastX, lastY] = [e.offsetX, e.offsetY];
-        }
-
-        function draw(e) {
-            if (!isDrawing) return;
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(e.offsetX, e.offsetY);
-            ctx.strokeStyle = document.getElementById('brush-color').value;
-            ctx.lineWidth = document.getElementById('brush-size').value;
-            ctx.stroke();
-            [lastX, lastY] = [e.offsetX, e.offsetY];
-        }
-
-        function stopDrawing() {
-            isDrawing = false;
-            imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        }
-
-        // Save image
-        document.getElementById('save').addEventListener('click', function() {
-            const link = document.createElement('a');
-            link.download = 'edited_image.png';
-            link.href = canvas.toDataURL();
-            link.click();
-        });
-    </script>
-</body>
-</html>
+<!-- Draw Options -->
+<div class="tool-options" id="draw-options" style="display: none;">
+    <label for="brush-color">Brush Color:</label>
+    <input type="color" id="brush-color" ng-model="brushColor" value="#000000" />
+    <label for="brush-size">Brush Size:</label>
+    <input type="range" id="brush-size" min="1" max="20" ng-model="brushSize" value="5" />
+</div>
