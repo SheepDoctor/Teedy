@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('docs').controller('ImageEditor', function ($scope, Restangular, $uibModalInstance, file, $timeout) {
+angular.module('docs').controller('ImageEditor', function ($scope, $stateParams, $http, $uibModalInstance, file, $timeout) {
 
   // Initialize variables
   $scope.imageUrl = `../api/file/${file.id}/data`;
@@ -160,7 +160,6 @@ angular.module('docs').controller('ImageEditor', function ($scope, Restangular, 
   // Save image
   $scope.saveImage = function () {
     if (!canvas || !ctx || !imageData) return;
-    // Ensure clean image data without crop rectangle
     ctx.putImageData(imageData, 0, 0);
     const link = document.createElement('a');
     link.download = 'edited_image.png';
@@ -171,29 +170,29 @@ angular.module('docs').controller('ImageEditor', function ($scope, Restangular, 
   // Save image to server with original filename
   $scope.saveToServer = function () {
     if (!canvas || !ctx || !imageData) return;
-
-    // Ensure clean image data without crop rectangle or drawing artifacts
+  
     ctx.putImageData(imageData, 0, 0);
-
-    // Convert canvas content to a Blob
+  
     canvas.toBlob(function (blob) {
-        // 使用原始文件名
-        const fileToUpload = new File([blob], file.name, { type: 'image/png' });
-        console.log('File to upload:', fileToUpload);
+      var formData = new FormData();
+      formData.append('id', $stateParams.id);
+      formData.append('previousFileId', file.id); // 指定要替换的旧文件ID
+      formData.append('file', blob, encodeURIComponent(file.name)); // 新文件内容
+  
+      // 使用 $http 发送 PUT 请求到 /file
+      $http.put('../api/file', formData, {
+        transformRequest: angular.identity,
+        headers: { 'Content-Type': undefined }
+      }).then(function (response) {
+        const newFileId = response.data.id;
+        console.log('File saved successfully:', newFileId);
+        alert('Image saved to server successfully.');
+      }, function (error) {
+        console.error('Failed to save file:', error);
+        alert('Error saving image to server.');
+      });
 
-        // 使用 Restangular 覆盖上传原文件（根据 file.id）
-        Restangular.one('file', file.id).customPUT(
-            fileToUpload,
-            undefined,
-            undefined,
-            { 'Content-Type': 'application/octet-stream' }
-        ).then(function (response) {
-            console.log('File saved successfully:', response);
-            alert('Image saved to server successfully.');
-        }, function (error) {
-            console.error('Failed to save file:', error);
-            alert('Error saving image to server.');
-        });
+  
     }, 'image/png');
   };
 
