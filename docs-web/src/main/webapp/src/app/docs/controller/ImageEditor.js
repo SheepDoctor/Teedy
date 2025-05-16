@@ -187,12 +187,11 @@ angular.module('docs').controller('ImageEditor', function ($scope, $stateParams,
         const newFileId = response.data.id;
         console.log('File saved successfully:', newFileId);
         alert('Image saved to server successfully.');
+        $scope.exitEditor();
       }, function (error) {
         console.error('Failed to save file:', error);
         alert('Error saving image to server.');
-      });
-
-  
+      }); 
     }, 'image/png');
   };
 
